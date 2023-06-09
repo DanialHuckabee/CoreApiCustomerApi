@@ -12,6 +12,9 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         /// </summary>
         private readonly string _onaylarimServiceUrl = "https://localhost:44337";
 
+        /// <summary>
+        /// Size verilen API anahtarı ile değiştiriniz.
+        /// </summary>
         private readonly string _apiKey = "278c0eb01c3f44e6ac0a64e43c478c0ab3e48a6fc4fe476987e52a3c8ced76b3";
 
         /// <summary>
