@@ -10,7 +10,7 @@ Kendi uygulamanıza ait servisleri oluşturmanız için örnek projedir.
 
 **OnaylarimController** sınıfında bulunan **onaylarimServiceUrl** adresini https://apitest.onaylarim.com olarak güncelleyerek test ortamımızda coreAPI'yi deneyebilirsiniz.
 
-**OnaylarimController** sınıfında bulunan **apiKey** değerini https://apitest.onaylarim.com size verilen API anahtarı ile değiştiriniz.
+**OnaylarimController** sınıfında bulunan **apiKey** değerini size verilen API anahtarı ile değiştiriniz.
 
 
 
