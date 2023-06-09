@@ -231,6 +231,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                                                 },
                                                 PhoneNumber = request.PhoneNumber,
                                                 Operator = request.Operator,
+                                                UserPrompt="CoreAPI ile belge imzalayacaksınız."
                                             })
                                     .ReceiveJson<ApiResult<SignStepOneCoreInternalForPadesMobileResult>>();
 
@@ -718,6 +719,10 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         /// İmza atarken kullanılacak mobil imzaya ait telefon numarasının bağlı olduğu operatördür. Örnek: TURKCELL, VODAFONE, AVEA
         /// </summary>
         public string Operator { get; set; }
+        /// <summary>
+        /// İmza atarken kullanıcıya gösterilecek mesaj
+        /// </summary>
+        public string UserPrompt { get; set; }
     }
 
     public class SignStepOnePadesCoreRequest : BaseRequest
