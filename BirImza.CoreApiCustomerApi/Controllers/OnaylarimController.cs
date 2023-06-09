@@ -233,9 +233,19 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                                                 Operator = request.Operator,
                                             })
                                     .ReceiveJson<ApiResult<SignStepOneCoreInternalForPadesMobileResult>>();
+
+                    if (string.IsNullOrWhiteSpace(signStepOneCoreResult.Error) == false)
+                    {
+                        result.Error = signStepOneCoreResult.Error;
+                    }
+                    else
+                    {
+                        result.IsSuccess = signStepOneCoreResult.Result.IsSuccess;
+                    }
                 }
                 catch (Exception ex)
                 {
+                    result.Error = ex.Message;
                 }
             }
             return result;
@@ -599,6 +609,10 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         /// İşlemin başarıyla tamamlanıp tamamlanmadığını gösterir
         /// </summary>
         public bool IsSuccess { get; set; }
+        /// <summary>
+        /// Hata var ise detay bilgisi döner.
+        /// </summary>
+        public string Error { get;  set; }
     }
 
     public class MobileSignRequest
