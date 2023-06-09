@@ -275,7 +275,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         /// <param name="operationId"></param>
         /// <returns></returns>
         [HttpGet("DownloadSignedFileFromOnaylarimApi")]
-        public async Task<IActionResult> DownloadSignedFileFromOnaylarimApi(string operationId)
+        public async Task<IActionResult> DownloadSignedFileFromOnaylarimApi(Guid operationId)
         {
 
             try
@@ -286,7 +286,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                                         .PostJsonAsync(
                                             new DownloadSignedFileCoreRequest()
                                             {
-                                                OperationId = Guid.NewGuid(),
+                                                OperationId = operationId,
                                                 RequestId = Guid.NewGuid().ToString().Replace("-", "").Substring(0, 21),
                                                 DisplayLanguage = "en"
                                             })
