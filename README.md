@@ -6,7 +6,11 @@ Kendi uygulamanıza ait servisleri oluşturmanız için örnek projedir.
 
 .NET 6.0 ile geliştirilmiştir. 
 
-OnaylarimController adında tek bir controller bulunmaktadır. Kod içerisinde gerekli açıklamalar bulunmaktadır.
+**OnaylarimController** adında tek bir controller bulunmaktadır. Kod içerisinde gerekli açıklamalar bulunmaktadır.
+
+**OnaylarimController** sınıfında bulunan **onaylarimServiceUrl** adresini https://apitest.onaylarim.com olarak güncelleyerek test ortamımızda coreAPI'yi deneyebilirsiniz.
+
+**OnaylarimController** sınıfında bulunan **apiKey** değerini size verilen API anahtarı ile değiştiriniz.
 
 
 
