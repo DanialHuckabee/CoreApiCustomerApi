@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Flurl.Http;
+using System.IO;
 
 namespace BirImza.CoreApiCustomerApi.Controllers
 {
@@ -70,7 +71,9 @@ namespace BirImza.CoreApiCustomerApi.Controllers
             else if (request.SignatureType == "pades")
             {
                 // İmzalanacak dosyayı kendi bilgisayarınızda bulunan bir pdf olarak ayarlayınız
-                var fileData = System.IO.File.ReadAllBytes(@"C:\Users\ulucefe\Desktop\sample.pdf");
+                //var fileData = System.IO.File.ReadAllBytes(@"C:\Users\ulucefe\Desktop\sample.pdf");
+                var fileData = System.IO.File.ReadAllBytes(@"C:\birimza\1\CoreAPI\372167CF-6143-4DB1-87CF-7AE7DC0FA1AB\Signed_20230821161316");
+                var signatureWidgetBackground = System.IO.File.ReadAllBytes(@"C:\Users\ulucefe\Desktop\Signature01.jpg");
 
                 try
                 {
@@ -82,7 +85,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                                             {
                                                 CerBytes = request.Certificate,
                                                 FileData = fileData,
-                                                SignatureIndex = 0,
+                                                SignatureIndex = 1,
                                                 OperationId = operationId,
                                                 RequestId = Guid.NewGuid().ToString().Replace("-", "").Substring(0, 21),
                                                 DisplayLanguage = "en",
@@ -102,14 +105,59 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                                                     Right = 0.03f,
                                                     Top = 0.02f,
                                                     TransformOrigin = "right top"
+                                                },
+                                                SignatureWidgetInfo = new SignatureWidgetInfo()
+                                                {
+                                                    Width = 100f,
+                                                    Height = 50f,
+                                                    Left = 0.5f,
+                                                    Top = 0.03f,
+                                                    TransformOrigin = "left top",
+                                                    ImageBytes = signatureWidgetBackground,
+                                                    PagesToPlaceOn = new int[] { 0 },
+                                                    Lines = new List<LineInfo>()
+                                                    {
+                                                        new LineInfo()
+                                                        {
+                                                             BottomMargin=4,
+                                                             ColorHtml="#000000",
+                                                             FontName="Arial",
+                                                             FontSize=10,
+                                                             FontStyle = "Bold",
+                                                             LeftMargin=4,
+                                                             RightMargin=4,
+                                                             Text="Uluç Efe Öztürk",
+                                                             TopMargin=4
+                                                        },
+                                                        new LineInfo()
+                                                        {
+                                                             BottomMargin=4,
+                                                             ColorHtml="#FF0000",
+                                                             FontName="Arial",
+                                                             FontSize=10,
+                                                             FontStyle = "Regular",
+                                                             LeftMargin=4,
+                                                             RightMargin=4,
+                                                             Text="2022-11-11",
+                                                             TopMargin=4
+                                                        }
+                                                    }
                                                 }
                                             })
                                     .ReceiveJson<ApiResult<SignStepOnePadesCoreResult>>();
 
-                    result.KeyID = signStepOneCoreResult.Result.KeyID;
-                    result.KeySecret = signStepOneCoreResult.Result.KeySecret;
-                    result.State = signStepOneCoreResult.Result.State;
-                    result.OperationId = operationId;
+                    if (string.IsNullOrWhiteSpace(signStepOneCoreResult.Error) )
+                    {
+                        result.KeyID = signStepOneCoreResult.Result.KeyID;
+                        result.KeySecret = signStepOneCoreResult.Result.KeySecret;
+                        result.State = signStepOneCoreResult.Result.State;
+                        result.OperationId = operationId;
+                    }
+                    else
+                    {
+                        result.Error = signStepOneCoreResult.Error;
+                    }
+
                 }
                 catch (Exception ex)
                 {
@@ -236,7 +284,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                                                 },
                                                 PhoneNumber = request.PhoneNumber,
                                                 Operator = request.Operator,
-                                                UserPrompt="CoreAPI ile belge imzalayacaksınız."
+                                                UserPrompt = "CoreAPI ile belge imzalayacaksınız."
                                             })
                                     .ReceiveJson<ApiResult<SignStepOneCoreInternalForPadesMobileResult>>();
 
@@ -527,6 +575,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         /// Her bir istek için tekil bir GUID değeri verilmelidir. Bu değer aynı e-imza işlemi ile ilgili olarak daha sonraki metodlarda kullanılır.
         /// </summary>
         public Guid OperationId { get; set; }
+        public string Error { get;  set; }
     }
 
     public class DownloadSignedFileCoreResult
@@ -618,7 +667,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         /// <summary>
         /// Hata var ise detay bilgisi döner.
         /// </summary>
-        public string Error { get;  set; }
+        public string Error { get; set; }
     }
 
     public class MobileSignRequest
@@ -732,6 +781,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
 
     public class SignStepOnePadesCoreRequest : BaseRequest
     {
+
         /// <summary>
         /// Son kullanıcı bilgisayarında bulunana e-İmza Aracı vasıtasıyla alınan, e-imza atarken kullanılacak sertifikadır
         /// </summary>
@@ -760,7 +810,13 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         /// İmzalanacak doküman üzerinde eklenecek QRCode ilgili bilgileri içerir
         /// </summary>
         public QrCodeInfo QrCodeInfo { get; set; }
+        /// <summary>
+        /// Sayfa üzerine eklenecek imza görseli bilgisidir
+        /// </summary>
+        public SignatureWidgetInfo SignatureWidgetInfo { get; set; }
     }
+
+
 
 
     public class SignStepOnePadesCoreResult
@@ -933,6 +989,91 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         /// İmzalama cümlesi kutusunun lokasyonu için hangi parametrelerin kullanılması gerektiği bilgisidir. Örnekler: "left top", "right top"
         /// </summary>
         public string TransformOrigin { get; set; }
+    }
+
+    public class SignatureWidgetInfo
+    {
+        /// <summary>
+        /// İmzanın pixel olarak genişliğidir
+        /// </summary>
+        public float Width { get; set; }
+        /// <summary>
+        /// İmzanın pixel olarak yüksekliğidir
+        /// </summary>
+        public float Height { get; set; }
+        /// <summary>
+        /// İmzanın sayfanın solundan olan uzaklığıdır. Sayfa genişliği 1000 olan bir sayfa için left değer 0.1 verilirse, imza sayfanın solundan uzaklığı 100 olur. Left ve Right değerleri aynı anda kullanılmamalı, sadece biri kullanılmalıdır.
+        /// </summary>
+        public float? Left { get; set; }
+        /// <summary>
+        /// İmzanın sayfanın sağından olan uzaklığıdır. Sayfa genişliği 1000 olan bir sayfa için right değer 0.1 verilirse, imza sayfanın sağından uzaklığı 100 olur. Left ve Right değerleri aynı anda kullanılmamalı, sadece biri kullanılmalıdır.
+        /// </summary>
+        public float? Right { get; set; }
+        /// <summary>
+        /// İmzanın sayfanın üstünden olan uzaklığıdır. Sayfa yüksekliği 1000 olan bir sayfa için top değer 0.1 verilirse, imza sayfanın üstünden uzaklığı 100 olur. Top ve Bottom değerleri aynı anda kullanılmamalı, sadece biri kullanılmalıdır.
+        /// </summary>
+        public float? Top { get; set; }
+        /// <summary>
+        /// İmzanın sayfanın altından olan uzaklığıdır. Sayfa yüksekliği 1000 olan bir sayfa için bottom değer 0.1 verilirse, imza sayfanın altından uzaklığı 100 olur. Top ve Bottom değerleri aynı anda kullanılmamalı, sadece biri kullanılmalıdır.
+        /// </summary>
+        public float? Bottom { get; set; }
+        // <summary>
+        /// İmzanın lokasyonu için hangi parametrelerin kullanılması gerektiği bilgisidir. Örnekler: "left top", "right top"
+        /// </summary>
+        public string TransformOrigin { get; set; }
+        /// <summary>
+        /// İmza görselinde arka plan görseli olarak kullanılacak imajın datasıdır. İmaj jpg olmalıdır
+        /// </summary>
+        public byte[] ImageBytes { get; set; }
+        /// <summary>
+        /// İmza görselinin hangi sayfalara yerleştirileceği bilgisidir, 0 dan başlar.
+        /// </summary>
+        public int[] PagesToPlaceOn { get; set; }
+        /// <summary>
+        /// İmza görseli içerisinde yazılacak ifadelerdir.
+        /// </summary>
+        public List<LineInfo> Lines { get; set; }
+    }
+
+    public class LineInfo
+    {
+        /// <summary>
+        /// Satır içerisinde yazacak ifadedir
+        /// </summary>
+        public string Text { get; set; }
+        /// <summary>
+        /// Satırın sol marjinidir.
+        /// </summary>
+        public int LeftMargin { get; set; }
+        /// <summary>
+        /// Satırın tepe marjinidir.
+        /// </summary>
+        public int TopMargin { get; set; }
+        /// <summary>
+        /// Satırın alt marjinidir.
+        /// </summary>
+        public int BottomMargin { get; set; }
+        /// <summary>
+        /// Satırın sağ marjinidir.
+        /// </summary>
+        public int RightMargin { get; set; }
+        /// <summary>
+        /// Satırın hangi font ile yazılacağını belirler. Arial, Tahoma gibi kullanınız.
+        /// </summary>
+        public string FontName { get; set; }
+        /// <summary>
+        /// Satırın hangi font büyüklüğü ile yazılacağını belirler.
+        /// </summary>
+        public float FontSize { get; set; }
+        /// <summary>
+        /// Satırın hangi font tipi ile yazılacağını belirler. Regular, Bold, Italic, Underline, Strikeout
+        /// </summary>
+        public string FontStyle { get; set; }
+        /// <summary>
+        /// Satırın hangi renkle yazılacağını belirleri. #FF00FF gibi kullanınız.
+        /// </summary>
+        public string ColorHtml { get; set; }
+
     }
 
 }
