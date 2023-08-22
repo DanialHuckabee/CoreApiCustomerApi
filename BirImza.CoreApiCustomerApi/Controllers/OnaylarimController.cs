@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Flurl.Http;
 using System.IO;
+using System.Text.Json;
 
 namespace BirImza.CoreApiCustomerApi.Controllers
 {
@@ -72,51 +73,72 @@ namespace BirImza.CoreApiCustomerApi.Controllers
             {
                 // İmzalanacak dosyayı kendi bilgisayarınızda bulunan bir pdf olarak ayarlayınız
                 //var fileData = System.IO.File.ReadAllBytes(@"C:\Users\ulucefe\Desktop\sample.pdf");
-                var fileData = System.IO.File.ReadAllBytes(@"C:\birimza\1\CoreAPI\372167CF-6143-4DB1-87CF-7AE7DC0FA1AB\Signed_20230821161316");
+                //var fileData = System.IO.File.ReadAllBytes(@"C:\birimza\1\CoreAPI\372167CF-6143-4DB1-87CF-7AE7DC0FA1AB\Signed_20230821161316");
+                var fileData = System.IO.File.ReadAllBytes(@"C:\Users\ulucefe\Downloads\100MB PDF File.pdf");
                 var signatureWidgetBackground = System.IO.File.ReadAllBytes(@"C:\Users\ulucefe\Desktop\Signature01.jpg");
 
                 try
                 {
+
+                    // Büyük dosyaların SignStepOnePadesCore metoduna json içerisinde gönderilmesi mümkün değildir.
+                    // Bu nedenle, büyük dosyalar imzalanmak istendiğinde, önce SignStepOneUploadFile metodu ile dosya sunucuya yüklenir.
+                    // Yükleme başarılı ise SignStepOnePadesCore metodu ile işleme devam edilir. Burada önemli olan, her iki metod için de aynı operationId değerini kullanmak gerekir
+                    // Bu şekilde bir kullanım yapılması durumunda, SignStepOnePadesCoreRequest objesindeki FileData parametresi boş byte array olarak gönderilmelidir.
+                    var uploadFileBeforeOperation = true;
+
+                    if (uploadFileBeforeOperation)
+                    {
+                        var signStepOneUploadFileResult = await $"{_onaylarimServiceUrl}/CoreApiPades/SignStepOneUploadFile"
+                                         .WithHeader("X-API-KEY", _apiKey)
+                                         .WithHeader("operationid", operationId)
+                                         .PostMultipartAsync(mp => mp
+                                                 .AddFile("file", @"C:\Users\ulucefe\Downloads\100MB PDF File.pdf", null, 4096, "100MB PDF File.pdf")
+                                         )
+                                         .ReceiveJson<ApiResult<SignStepOneUploadFileResult>>();
+
+
+                    }
+
                     // Size verilen API key'i "X-API-KEY değeri olarak ayarlayınız
                     var signStepOneCoreResult = await $"{_onaylarimServiceUrl}/CoreApiPades/SignStepOnePadesCore"
-                                    .WithHeader("X-API-KEY", _apiKey)
-                                    .PostJsonAsync(
-                                            new SignStepOnePadesCoreRequest()
+                                .WithHeader("X-API-KEY", _apiKey)
+                                .PostJsonAsync(
+                                        new SignStepOnePadesCoreRequest()
+                                        {
+                                            CerBytes = request.Certificate,
+                                            FileData = uploadFileBeforeOperation ? new byte[] { } : fileData,
+                                            SignatureIndex = 1,
+                                            OperationId = operationId,
+                                            RequestId = Guid.NewGuid().ToString().Replace("-", "").Substring(0, 21),
+                                            DisplayLanguage = "en",
+                                            VerificationInfo = new VerificationInfo()
                                             {
-                                                CerBytes = request.Certificate,
-                                                FileData = fileData,
-                                                SignatureIndex = 1,
-                                                OperationId = operationId,
-                                                RequestId = Guid.NewGuid().ToString().Replace("-", "").Substring(0, 21),
-                                                DisplayLanguage = "en",
-                                                VerificationInfo = new VerificationInfo()
+                                                Text = "Bu belge 5070 sayılı elektronik imza kanununa göre güvenli elektronik imza ile imzalanmıştır. Belgeye\r\nhttps://localhost:8082 adresinden 97275466-4A90128E46284E3181CF21020554BFEC452DBDE73",
+                                                Width = 0.8f,
+                                                Height = 0.1f,
+                                                Left = 0.1f,
+                                                Bottom = 0.03f,
+                                                TransformOrigin = "left bottom"
+                                            },
+                                            QrCodeInfo = new QrCodeInfo()
+                                            {
+                                                Text = "google.com",
+                                                Width = 0.1f,
+                                                Right = 0.03f,
+                                                Top = 0.02f,
+                                                TransformOrigin = "right top"
+                                            },
+                                            SignatureWidgetInfo = new SignatureWidgetInfo()
+                                            {
+                                                Width = 100f,
+                                                Height = 50f,
+                                                Left = 0.5f,
+                                                Top = 0.03f,
+                                                TransformOrigin = "left top",
+                                                ImageBytes = signatureWidgetBackground,
+                                                PagesToPlaceOn = new int[] { 0 },
+                                                Lines = new List<LineInfo>()
                                                 {
-                                                    Text = "Bu belge 5070 sayılı elektronik imza kanununa göre güvenli elektronik imza ile imzalanmıştır. Belgeye\r\nhttps://localhost:8082 adresinden 97275466-4A90128E46284E3181CF21020554BFEC452DBDE73",
-                                                    Width = 0.8f,
-                                                    Height = 0.1f,
-                                                    Left = 0.1f,
-                                                    Bottom = 0.03f,
-                                                    TransformOrigin = "left bottom"
-                                                },
-                                                QrCodeInfo = new QrCodeInfo()
-                                                {
-                                                    Text = "google.com",
-                                                    Width = 0.1f,
-                                                    Right = 0.03f,
-                                                    Top = 0.02f,
-                                                    TransformOrigin = "right top"
-                                                },
-                                                SignatureWidgetInfo = new SignatureWidgetInfo()
-                                                {
-                                                    Width = 100f,
-                                                    Height = 50f,
-                                                    Left = 0.5f,
-                                                    Top = 0.03f,
-                                                    TransformOrigin = "left top",
-                                                    ImageBytes = signatureWidgetBackground,
-                                                    PagesToPlaceOn = new int[] { 0 },
-                                                    Lines = new List<LineInfo>()
-                                                    {
                                                         new LineInfo()
                                                         {
                                                              BottomMargin=4,
@@ -141,12 +163,13 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                                                              Text="2022-11-11",
                                                              TopMargin=4
                                                         }
-                                                    }
                                                 }
-                                            })
-                                    .ReceiveJson<ApiResult<SignStepOnePadesCoreResult>>();
+                                            }
+                                        })
+                                .ReceiveJson<ApiResult<SignStepOnePadesCoreResult>>();
 
-                    if (string.IsNullOrWhiteSpace(signStepOneCoreResult.Error) )
+
+                    if (string.IsNullOrWhiteSpace(signStepOneCoreResult.Error))
                     {
                         result.KeyID = signStepOneCoreResult.Result.KeyID;
                         result.KeySecret = signStepOneCoreResult.Result.KeySecret;
@@ -575,7 +598,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         /// Her bir istek için tekil bir GUID değeri verilmelidir. Bu değer aynı e-imza işlemi ile ilgili olarak daha sonraki metodlarda kullanılır.
         /// </summary>
         public Guid OperationId { get; set; }
-        public string Error { get;  set; }
+        public string Error { get; set; }
     }
 
     public class DownloadSignedFileCoreResult
@@ -1074,6 +1097,12 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         /// </summary>
         public string ColorHtml { get; set; }
 
+    }
+
+    public class SignStepOneUploadFileResult
+    {
+        public bool IsSuccess { get; set; }
+        public Guid OperationId { get; set; }
     }
 
 }
