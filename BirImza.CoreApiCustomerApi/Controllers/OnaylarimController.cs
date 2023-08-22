@@ -480,6 +480,35 @@ namespace BirImza.CoreApiCustomerApi.Controllers
 
         }
 
+        [HttpGet("VerifySignaturesOnOnaylarimApi")]
+        public async Task<VerifySignaturesCoreResult> VerifySignaturesOnOnaylarimApi()
+        {
+            var result = new VerifySignaturesCoreResult();
+
+            var operationId = Guid.NewGuid();
+
+            try
+            {
+
+                var verifySignaturesCoreResult = await $"{_onaylarimServiceUrl}/CoreApiPades/VerifySignaturesCore"
+                                     .WithHeader("X-API-KEY", _apiKey)
+                                     .WithHeader("operationid", operationId)
+                                     .PostMultipartAsync(mp => mp
+                                             .AddFile("file", @"C:\Users\ulucefe\Downloads\cok imzali.pdf", null, 4096, "cok imzali.pdf")
+                                     )
+                                     .ReceiveJson<ApiResult<VerifySignaturesCoreResult>>();
+
+                return verifySignaturesCoreResult.Result;
+
+
+            }
+            catch (Exception ex)
+            {
+            }
+
+            return result;
+
+        }
 
     }
 
@@ -1103,6 +1132,110 @@ namespace BirImza.CoreApiCustomerApi.Controllers
     {
         public bool IsSuccess { get; set; }
         public Guid OperationId { get; set; }
+    }
+
+    public class VerifySignaturesCoreResult
+    {
+        public bool CaptchaError { get; set; }
+        public bool AllSignaturesValid { get; set; }
+        public List<VerifyDocumentResultSignature> Signatures { get; set; }
+        public List<VerifyDocumentResultTimestamp> Timestamps { get; set; }
+        public string FileName { get; set; }
+        public string SignatureType { get; set; }
+    }
+
+    public class VerifyDocumentResultSignature
+    {
+        public string ChainValidationResult { get; set; }
+        public DateTime ClaimedSigningTime { get; set; }
+        public string HashAlgorithm { get; set; }
+        public string Profile { get; set; }
+        public bool Timestamped { get; set; }
+        public string Reason { get; set; }
+        public string Level { get; set; }
+        public string CitizenshipNo { get; set; }
+        public string FullName { get; set; }
+
+        public bool IsExpanded { get; set; }
+        public int Index { get; set; }
+
+        public string IssuerRDN { get; set; }
+
+        public byte[] SerialNumber { get; set; }
+        public string SerialNumberString
+        {
+            get
+            {
+                if (SerialNumber == null || SerialNumber.Length == 0)
+                {
+                    return null;
+                }
+                else
+                {
+                    return BitConverter.ToString(SerialNumber);
+                }
+            }
+        }
+
+        public byte[] SubjectKeyID { get; set; }
+
+        public string SubjectKeyIDString
+        {
+            get
+            {
+                if (SubjectKeyID == null || SubjectKeyID.Length == 0)
+                {
+                    return null;
+                }
+                else
+                {
+                    return BitConverter.ToString(SubjectKeyID);
+                }
+            }
+        }
+    }
+
+    public class VerifyDocumentResultTimestamp
+    {
+        public DateTime Time { get; set; }
+        public string TSAName { get; set; }
+        public int TimestampType { get; set; }
+        public int Index { get; set; }
+
+        public string IssuerRDN { get; set; }
+        public byte[] SerialNumber { get; set; }
+
+        public string SerialNumberString
+        {
+            get
+            {
+                if (SerialNumber == null || SerialNumber.Length == 0)
+                {
+                    return null;
+                }
+                else
+                {
+                    return BitConverter.ToString(SerialNumber);
+                }
+            }
+        }
+
+        public byte[] SubjectKeyID { get; set; }
+
+        public string SubjectKeyIDString
+        {
+            get
+            {
+                if (SubjectKeyID == null || SubjectKeyID.Length == 0)
+                {
+                    return null;
+                }
+                else
+                {
+                    return BitConverter.ToString(SubjectKeyID);
+                }
+            }
+        }
     }
 
 }
