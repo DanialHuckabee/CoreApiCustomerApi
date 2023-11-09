@@ -20,10 +20,26 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         /// <summary>
         /// Size verilen API anahtarı ile değiştiriniz.
         /// </summary>
+<<<<<<< HEAD
+        /// 
+        
+        //private readonly string _apiKey = "e7f6aa834bd145199eb9ae5e1a5744a02151b9ed63024c1eb889493f59ebc27d";
+        private readonly string _apiKey = "e1eb6f74ea65404bb383f24be46ee35a312092c0e5b647e1b21335c870e7b23f";
+        //private readonly string _apiKey = "62e00e670b394e8b9c1b339d65383d8183e514e1fe0747598c5fd5c34c0de921";
+
+        private IWebHostEnvironment _env;
+
+        public OnaylarimController(IWebHostEnvironment env)
+        {
+            _env = env;
+        }
+
+=======
         private readonly string _apiKey = "278c0eb01c3f44e6ac0a64e43c478c0ab3e48a6fc4fe476987e52a3c8ced76b3";
         //private readonly string _apiKey = "865365135dff485b8ea0a2f515cbaaed08bf0f2444e646bdb31df6834fa5b126";
         //private readonly string _apiKey = "62e00e670b394e8b9c1b339d65383d8183e514e1fe0747598c5fd5c34c0de921";
 
+>>>>>>> parent of d584eea (Sample files added to project)
         /// <summary>
         /// CADES ve PADES e-imza atma işlemi için ilk adımdır
         /// </summary>
@@ -36,10 +52,22 @@ namespace BirImza.CoreApiCustomerApi.Controllers
 
             var operationId = Guid.NewGuid();
 
+<<<<<<< HEAD
+
+
+
+            if (request.SignatureType == "cades")
+            {
+                string sampleFileToSign = Path.Combine(_env.ContentRootPath, "Resources/2023-04-14_Api_Development.log");
+                
+
+                var fileData = System.IO.File.ReadAllBytes(sampleFileToSign);
+=======
             if (request.SignatureType == "cades")
             {
                 // İmzalanacak dosyayı kendi bilgisayarınızda bulunan bir dosya olarak ayarlayınız
                 var fileData = System.IO.File.ReadAllBytes(@"C:\Temp\2023-04-14_Api_Development.log");
+>>>>>>> parent of d584eea (Sample files added to project)
 
                 try
                 {
@@ -51,7 +79,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                                             {
                                                 CerBytes = request.Certificate,
                                                 FileData = fileData,
-                                                SignatureIndex = 0,
+                                                SignatureIndex = 1,
                                                 OperationId = operationId,
                                                 RequestId = Guid.NewGuid().ToString().Replace("-", "").Substring(0, 21),
                                                 DisplayLanguage = "en"
@@ -65,17 +93,30 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                 }
                 catch (Exception ex)
                 {
+<<<<<<< HEAD
+                    result.Error = "Code1. " + ex.Message;
+=======
 
+>>>>>>> parent of d584eea (Sample files added to project)
                 }
             }
 
             else if (request.SignatureType == "pades")
             {
+<<<<<<< HEAD
+
+
+                string sampleFileToSign = Path.Combine(_env.ContentRootPath, "Resources/sample.pdf");
+                var fileData = System.IO.File.ReadAllBytes(sampleFileToSign);
+                string signatureImage = Path.Combine(_env.ContentRootPath, "Resources/Signature01.jpg");
+                var signatureWidgetBackground = System.IO.File.ReadAllBytes(signatureImage);
+=======
                 // İmzalanacak dosyayı kendi bilgisayarınızda bulunan bir pdf olarak ayarlayınız
                 //var fileData = System.IO.File.ReadAllBytes(@"C:\Users\ulucefe\Desktop\sample.pdf");
                 //var fileData = System.IO.File.ReadAllBytes(@"C:\birimza\1\CoreAPI\372167CF-6143-4DB1-87CF-7AE7DC0FA1AB\Signed_20230821161316");
                 var fileData = System.IO.File.ReadAllBytes(@"C:\Users\ulucefe\Downloads\100MB PDF File.pdf");
                 var signatureWidgetBackground = System.IO.File.ReadAllBytes(@"C:\Users\ulucefe\Desktop\Signature01.jpg");
+>>>>>>> parent of d584eea (Sample files added to project)
 
                 try
                 {
@@ -224,6 +265,10 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                 }
                 catch (Exception ex)
                 {
+<<<<<<< HEAD
+                    result.Error = "Code3. " + ex.Message;
+=======
+>>>>>>> parent of d584eea (Sample files added to project)
                 }
             }
             else if (request.SignatureType == "pades")
@@ -708,6 +753,10 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         /// İşlemin başarıyla tamamlanıp tamamlanmadığını gösterir
         /// </summary>
         public bool IsSuccess { get; set; }
+<<<<<<< HEAD
+        public string Error { get; set; }
+=======
+>>>>>>> parent of d584eea (Sample files added to project)
     }
 
     public class MobilSignResult
@@ -754,6 +803,8 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         public byte[] FileData { get; set; }
         /// <summary>
         /// Dosya üzerinde kaçıncı imza olduğu bilgisidir. Dosya üzerinde hiç imza yok ise 0 değeri atanır.
+        /// Pades imzalar için bu değer önemsizdir. 
+        /// Ancak Cades imzalar için bu değer doğru gönderilmelidir.
         /// </summary>
         public int SignatureIndex { get; set; }
         /// <summary>
