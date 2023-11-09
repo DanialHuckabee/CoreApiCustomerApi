@@ -9,6 +9,9 @@ namespace BirImza.CoreApiCustomerApi.Controllers
     [ApiController]
     public class OnaylarimController : ControllerBase
     {
+
+        private IWebHostEnvironment _env;
+
         /// <summary>
         /// Bu adresi test ortamı için https://apitest.onaylarim.com olarak değiştirmelisiniz
         /// </summary>
@@ -24,6 +27,11 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         //private readonly string _apiKey = "865365135dff485b8ea0a2f515cbaaed08bf0f2444e646bdb31df6834fa5b126";
         //private readonly string _apiKey = "62e00e670b394e8b9c1b339d65383d8183e514e1fe0747598c5fd5c34c0de921";
 
+
+        public OnaylarimController(IWebHostEnvironment env)
+        {
+                _env = env;
+        }
         /// <summary>
         /// CADES ve PADES e-imza atma işlemi için ilk adımdır
         /// </summary>
@@ -39,7 +47,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
             if (request.SignatureType == "cades")
             {
                 // İmzalanacak dosyayı kendi bilgisayarınızda bulunan bir dosya olarak ayarlayınız
-                var fileData = System.IO.File.ReadAllBytes(@"C:\Temp\2023-04-14_Api_Development.log");
+                var fileData = System.IO.File.ReadAllBytes($@"{_env.ContentRootPath}\Resources\2023-04-14_Api_Development.log");
 
                 try
                 {
@@ -72,10 +80,8 @@ namespace BirImza.CoreApiCustomerApi.Controllers
             else if (request.SignatureType == "pades")
             {
                 // İmzalanacak dosyayı kendi bilgisayarınızda bulunan bir pdf olarak ayarlayınız
-                //var fileData = System.IO.File.ReadAllBytes(@"C:\Users\ulucefe\Desktop\sample.pdf");
-                //var fileData = System.IO.File.ReadAllBytes(@"C:\birimza\1\CoreAPI\372167CF-6143-4DB1-87CF-7AE7DC0FA1AB\Signed_20230821161316");
-                var fileData = System.IO.File.ReadAllBytes(@"C:\Users\ulucefe\Downloads\100MB PDF File.pdf");
-                var signatureWidgetBackground = System.IO.File.ReadAllBytes(@"C:\Users\ulucefe\Desktop\Signature01.jpg");
+                var fileData = System.IO.File.ReadAllBytes($@"{_env.ContentRootPath}\Resources\sample.pdf");
+                var signatureWidgetBackground = System.IO.File.ReadAllBytes($@"{_env.ContentRootPath}\Resources\Signature01.jpg");
 
                 try
                 {
@@ -92,7 +98,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                                          .WithHeader("X-API-KEY", _apiKey)
                                          .WithHeader("operationid", operationId)
                                          .PostMultipartAsync(mp => mp
-                                                 .AddFile("file", @"C:\Users\ulucefe\Downloads\100MB PDF File.pdf", null, 4096, "100MB PDF File.pdf")
+                                                 .AddFile("file", $@"{_env.ContentRootPath}\Resources\Sample.pdf", null, 4096, "Sample.pdf")
                                          )
                                          .ReceiveJson<ApiResult<SignStepOneUploadFileResult>>();
 
@@ -273,7 +279,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
             else if (request.SignatureType == "pades")
             {
                 // İmzalanacak dosyayı kendi bilgisayarınızda bulunan bir pdf olarak ayarlayınız
-                var fileData = System.IO.File.ReadAllBytes(@"C:\Users\ulucefe\Desktop\sample.pdf");
+                var fileData = System.IO.File.ReadAllBytes($@"{_env.ContentRootPath}\Resources\sample.pdf");
 
                 try
                 {
@@ -397,7 +403,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         public async Task<IActionResult> ConvertToPdf()
         {
             // Dosyayı kendi bilgisayarınızda bulunan bir dosya olarak ayarlayınız
-            var fileData = System.IO.File.ReadAllBytes(@"C:\Users\ulucefe\Downloads\yeni proje.docx");
+            var fileData = System.IO.File.ReadAllBytes($@"{_env.ContentRootPath}\Resources\yeni proje.docx");
 
             var operationId = Guid.NewGuid();
             try
@@ -435,7 +441,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         {
 
             // Dosyayı kendi bilgisayarınızda bulunan bir dosya olarak ayarlayınız
-            var fileData = System.IO.File.ReadAllBytes(@"C:\Users\ulucefe\Desktop\sample.pdf");
+            var fileData = System.IO.File.ReadAllBytes($@"{_env.ContentRootPath}\Resources\sample.pdf");
 
             try
             {
@@ -494,7 +500,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                                      .WithHeader("X-API-KEY", _apiKey)
                                      .WithHeader("operationid", operationId)
                                      .PostMultipartAsync(mp => mp
-                                             .AddFile("file", @"C:\Users\ulucefe\Downloads\cok imzali.pdf", null, 4096, "cok imzali.pdf")
+                                             .AddFile("file", $@"{_env.ContentRootPath}\Resources\cok imzali.pdf", null, 4096, "cok imzali.pdf")
                                      )
                                      .ReceiveJson<ApiResult<VerifySignaturesCoreResult>>();
 
