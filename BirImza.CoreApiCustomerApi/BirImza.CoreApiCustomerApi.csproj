@@ -10,22 +10,4 @@
     <PackageReference Include="Flurl.Http" Version="4.0.0-pre3" />
   </ItemGroup>
 
-<<<<<<< HEAD
-  <ItemGroup>
-    <None Update="Resources\2023-04-14_Api_Development.log">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\sample.pdf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Signature01.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\yeni proje.docx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-=======
->>>>>>> parent of d584eea (Sample files added to project)
 </Project>
