@@ -30,7 +30,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
 
         public OnaylarimController(IWebHostEnvironment env)
         {
-                _env = env;
+            _env = env;
         }
         /// <summary>
         /// CADES ve PADES e-imza atma işlemi için ilk adımdır
@@ -486,6 +486,88 @@ namespace BirImza.CoreApiCustomerApi.Controllers
 
         }
 
+        /// <summary>
+        /// Pades imzalı bir belgenin e-imzalarını zenginleştirir
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("UpgradePades")]
+        public async Task<IActionResult> UpgradePades()
+        {
+
+            var operationId = Guid.NewGuid();
+
+            // Dosyayı kendi bilgisayarınızda bulunan bir dosya olarak ayarlayınız
+            var filePath = $@"{_env.ContentRootPath}\Resources\sampleEst.pdf";
+
+            ApiResult<SignStepOneUploadFileResult> signStepOneUploadFileResult;
+            try
+            {
+                signStepOneUploadFileResult = await $"{_onaylarimServiceUrl}/CoreApiPades/SignStepOneUploadFile"
+                                        .WithHeader("X-API-KEY", _apiKey)
+                                        .WithHeader("operationid", operationId)
+                                        .PostMultipartAsync(mp => mp
+                                                .AddFile("file", filePath, null, 4096, "besSigned.pdf")
+                                        )
+                                        .ReceiveJson<ApiResult<SignStepOneUploadFileResult>>();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+            if (signStepOneUploadFileResult == null)
+            {
+                return BadRequest("Hata");
+            }
+            else if (string.IsNullOrWhiteSpace(signStepOneUploadFileResult.Error) == false)
+            {
+                return BadRequest(signStepOneUploadFileResult.Error);
+            }
+
+
+            ApiResult<UpgradePadesCoreResult> signStepOneCoreResult = null;
+            try
+            {
+                // Size verilen API key'i "X-API-KEY değeri olarak ayarlayınız
+                signStepOneCoreResult = await $"{_onaylarimServiceUrl}/CoreApiPades/UpgradePadesCore"
+                                .WithHeader("X-API-KEY", _apiKey)
+                                .PostJsonAsync(
+                                        new UpgradePadesCoreRequest()
+                                        {
+                                            OperationId = signStepOneUploadFileResult.Result.OperationId,
+                                            RequestId = Guid.NewGuid().ToString().Replace("-", "").Substring(0, 21),
+                                            DisplayLanguage = "en",
+                                        })
+                                .ReceiveJson<ApiResult<UpgradePadesCoreResult>>();
+
+                return Ok(operationId);
+
+                //return File(signStepOneCoreResult.Result.FileData, "application/pdf", "pdf000.pdf");
+
+            }
+            catch (Exception ex)
+            {
+            }
+
+            if (signStepOneCoreResult == null)
+            {
+                return BadRequest("Hata");
+            }
+            else if (string.IsNullOrWhiteSpace(signStepOneCoreResult.Error) == false)
+            {
+                return BadRequest(signStepOneCoreResult.Error);
+            }
+            else if (signStepOneCoreResult.Result.IsSuccess==false)
+            {
+                return BadRequest("Hata");
+            }
+
+
+            return BadRequest("Hata");
+
+        }
+
         [HttpGet("VerifySignaturesOnOnaylarimApi")]
         public async Task<VerifySignaturesCoreResult> VerifySignaturesOnOnaylarimApi()
         {
@@ -524,6 +606,15 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         /// Üzerine layer eklenmiş dosya verisidir
         /// </summary>
         public byte[] FileData { get; set; }
+    }
+
+    public class UpgradePadesCoreRequest : BaseRequest
+    {
+
+        /// <summary>
+        /// Her bir istek için tekil bir GUID değeri verilmelidir. Bu değer aynı e-imza işlemi ile ilgili olarak daha sonraki metodlarda kullanılır.
+        /// </summary>
+        public Guid OperationId { get; set; }
     }
 
     public class AddLayersCoreRequest : BaseRequest
@@ -634,6 +725,11 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         /// </summary>
         public Guid OperationId { get; set; }
         public string Error { get; set; }
+    }
+
+    public class UpgradePadesCoreResult
+    {
+        public bool IsSuccess { get; set; }
     }
 
     public class DownloadSignedFileCoreResult
