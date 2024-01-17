@@ -9,28 +9,29 @@ namespace BirImza.CoreApiCustomerApi.Controllers
     [ApiController]
     public class OnaylarimController : ControllerBase
     {
-
+        private readonly ILogger<OnaylarimController> _logger;
         private IWebHostEnvironment _env;
 
         /// <summary>
         /// Bu adresi test ortamı için https://apitest.onaylarim.com olarak değiştirmelisiniz
         /// </summary>
-        private readonly string _onaylarimServiceUrl = "https://localhost:44337";
-        //private readonly string _onaylarimServiceUrl = "https://apitest.onaylarim.com";
-        //private readonly string _onaylarimServiceUrl = "http://api.beamimza.com";
-
+        //private readonly string _onaylarimServiceUrl = "https://localhost:44337";
+        private readonly string _onaylarimServiceUrl = "https://apitest.onaylarim.com";
+        ////private readonly string _onaylarimServiceUrl = "http://api.beamimza.com";
+        
 
         /// <summary>
         /// Size verilen API anahtarı ile değiştiriniz.
         /// </summary>
-        private readonly string _apiKey = "278c0eb01c3f44e6ac0a64e43c478c0ab3e48a6fc4fe476987e52a3c8ced76b3";
-        //private readonly string _apiKey = "865365135dff485b8ea0a2f515cbaaed08bf0f2444e646bdb31df6834fa5b126";
+        //private readonly string _apiKey = "278c0eb01c3f44e6ac0a64e43c478c0ab3e48a6fc4fe476987e52a3c8ced76b3";
+        private readonly string _apiKey = "e7f6aa834bd145199eb9ae5e1a5744a02151b9ed63024c1eb889493f59ebc27d";
         //private readonly string _apiKey = "62e00e670b394e8b9c1b339d65383d8183e514e1fe0747598c5fd5c34c0de921";
 
 
-        public OnaylarimController(IWebHostEnvironment env)
+        public OnaylarimController(IWebHostEnvironment env, ILogger<OnaylarimController> logger)
         {
             _env = env;
+            _logger = logger;
         }
         /// <summary>
         /// CADES ve PADES e-imza atma işlemi için ilk adımdır
@@ -40,17 +41,20 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         [HttpPost("CreateStateOnOnaylarimApi")]
         public async Task<CreateStateOnOnaylarimApiResult> CreateStateOnOnaylarimApi(CreateStateOnOnaylarimApiRequest request)
         {
+            _logger.LogInformation("CreateStateOnOnaylarimApi start");
+
             var result = new CreateStateOnOnaylarimApiResult();
 
             var operationId = Guid.NewGuid();
 
+
             if (request.SignatureType == "cades")
             {
-                // İmzalanacak dosyayı kendi bilgisayarınızda bulunan bir dosya olarak ayarlayınız
-                var fileData = System.IO.File.ReadAllBytes($@"{_env.ContentRootPath}\Resources\2023-04-14_Api_Development.log");
-
                 try
                 {
+                    // İmzalanacak dosyayı kendi bilgisayarınızda bulunan bir dosya olarak ayarlayınız
+                    var fileData = System.IO.File.ReadAllBytes($@"{_env.ContentRootPath}\Resources\2023-04-14_Api_Development.log");
+
                     // Size verilen API key'i "X-API-KEY değeri olarak ayarlayınız
                     var signStepOneCoreResult = await $"{_onaylarimServiceUrl}/CoreApiCades/SignStepOneCadesCore"
                                     .WithHeader("X-API-KEY", _apiKey)
@@ -79,12 +83,14 @@ namespace BirImza.CoreApiCustomerApi.Controllers
 
             else if (request.SignatureType == "pades")
             {
-                // İmzalanacak dosyayı kendi bilgisayarınızda bulunan bir pdf olarak ayarlayınız
-                var fileData = System.IO.File.ReadAllBytes($@"{_env.ContentRootPath}\Resources\sample.pdf");
-                var signatureWidgetBackground = System.IO.File.ReadAllBytes($@"{_env.ContentRootPath}\Resources\Signature01.jpg");
+               
 
                 try
                 {
+
+                    // İmzalanacak dosyayı kendi bilgisayarınızda bulunan bir pdf olarak ayarlayınız
+                    var fileData = System.IO.File.ReadAllBytes($@"{_env.ContentRootPath}\Resources\sample.pdf");
+                    var signatureWidgetBackground = System.IO.File.ReadAllBytes($@"{_env.ContentRootPath}\Resources\Signature01.jpg");
 
                     // Büyük dosyaların SignStepOnePadesCore metoduna json içerisinde gönderilmesi mümkün değildir.
                     // Bu nedenle, büyük dosyalar imzalanmak istendiğinde, önce SignStepOneUploadFile metodu ile dosya sunucuya yüklenir.
@@ -190,6 +196,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                 }
                 catch (Exception ex)
                 {
+                    _logger.LogError(ex, "CreateStateOnOnaylarimApi");
                 }
             }
             return result;
@@ -204,6 +211,8 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         [HttpPost("FinishSign")]
         public async Task<FinishSignResult> FinishSign(FinishSignRequest request)
         {
+            _logger.LogInformation("FinishSign");
+
             var result = new FinishSignResult();
 
             if (request.SignatureType == "cades")
@@ -230,6 +239,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                 }
                 catch (Exception ex)
                 {
+                    _logger.LogError(ex, "FinishSign");
                 }
             }
             else if (request.SignatureType == "pades")
@@ -256,6 +266,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                 }
                 catch (Exception ex)
                 {
+                    _logger.LogError(ex, "FinishSign");
                 }
             }
 
