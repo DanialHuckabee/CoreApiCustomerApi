@@ -15,16 +15,16 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         /// <summary>
         /// Bu adresi test ortamı için https://apitest.onaylarim.com olarak değiştirmelisiniz
         /// </summary>
-        //private readonly string _onaylarimServiceUrl = "https://localhost:44337";
-        private readonly string _onaylarimServiceUrl = "https://apitest.onaylarim.com";
+        private readonly string _onaylarimServiceUrl = "https://localhost:44337";
+        //private readonly string _onaylarimServiceUrl = "https://apitest.onaylarim.com";
         ////private readonly string _onaylarimServiceUrl = "http://api.beamimza.com";
-        
+
 
         /// <summary>
         /// Size verilen API anahtarı ile değiştiriniz.
         /// </summary>
-        //private readonly string _apiKey = "278c0eb01c3f44e6ac0a64e43c478c0ab3e48a6fc4fe476987e52a3c8ced76b3";
-        private readonly string _apiKey = "e7f6aa834bd145199eb9ae5e1a5744a02151b9ed63024c1eb889493f59ebc27d";
+        private readonly string _apiKey = "278c0eb01c3f44e6ac0a64e43c478c0ab3e48a6fc4fe476987e52a3c8ced76b3";
+        //private readonly string _apiKey = "e7f6aa834bd145199eb9ae5e1a5744a02151b9ed63024c1eb889493f59ebc27d";
         //private readonly string _apiKey = "62e00e670b394e8b9c1b339d65383d8183e514e1fe0747598c5fd5c34c0de921";
 
 
