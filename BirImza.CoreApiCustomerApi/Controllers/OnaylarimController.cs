@@ -508,7 +508,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
             var operationId = Guid.NewGuid();
 
             // Dosyayı kendi bilgisayarınızda bulunan bir dosya olarak ayarlayınız
-            var filePath = $@"{_env.ContentRootPath}\Resources\sampleEst.pdf";
+            var filePath = $@"{_env.ContentRootPath}\Resources\tek imza.pdf";
 
             ApiResult<SignStepOneUploadFileResult> signStepOneUploadFileResult;
             try
@@ -517,14 +517,14 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                                         .WithHeader("X-API-KEY", _apiKey)
                                         .WithHeader("operationid", operationId)
                                         .PostMultipartAsync(mp => mp
-                                                .AddFile("file", filePath, null, 4096, "besSigned.pdf")
+                                                .AddFile("file", filePath, null, 4096, "tek imza.pdf")
                                         )
                                         .ReceiveJson<ApiResult<SignStepOneUploadFileResult>>();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
 
-                throw;
+                throw ex;
             }
 
             if (signStepOneUploadFileResult == null)
@@ -570,6 +570,88 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                 return BadRequest(signStepOneCoreResult.Error);
             }
             else if (signStepOneCoreResult.Result.IsSuccess==false)
+            {
+                return BadRequest("Hata");
+            }
+
+
+            return BadRequest("Hata");
+
+        }
+
+        /// <summary>
+        /// Pades imzalı bir belgenin e-imzalarını zenginleştirir
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("UpgradeCades")]
+        public async Task<IActionResult> UpgradeCades()
+        {
+
+            var operationId = Guid.NewGuid();
+
+            // Dosyayı kendi bilgisayarınızda bulunan bir dosya olarak ayarlayınız
+            var filePath = $@"{_env.ContentRootPath}\Resources\tek imza.pdf.imz";
+
+            ApiResult<SignStepOneUploadFileResult> signStepOneUploadFileResult;
+            try
+            {
+                signStepOneUploadFileResult = await $"{_onaylarimServiceUrl}/CoreApiPades/SignStepOneUploadFile"
+                                        .WithHeader("X-API-KEY", _apiKey)
+                                        .WithHeader("operationid", operationId)
+                                        .PostMultipartAsync(mp => mp
+                                                .AddFile("file", filePath, null, 4096, "tek imza.pdf.imz")
+                                        )
+                                        .ReceiveJson<ApiResult<SignStepOneUploadFileResult>>();
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
+            if (signStepOneUploadFileResult == null)
+            {
+                return BadRequest("Hata");
+            }
+            else if (string.IsNullOrWhiteSpace(signStepOneUploadFileResult.Error) == false)
+            {
+                return BadRequest(signStepOneUploadFileResult.Error);
+            }
+
+
+            ApiResult<UpgradeCadesCoreResult> signStepOneCoreResult = null;
+            try
+            {
+                // Size verilen API key'i "X-API-KEY değeri olarak ayarlayınız
+                signStepOneCoreResult = await $"{_onaylarimServiceUrl}/CoreApiCades/UpgradeCadesCore"
+                                .WithHeader("X-API-KEY", _apiKey)
+                                .PostJsonAsync(
+                                        new UpgradePadesCoreRequest()
+                                        {
+                                            OperationId = signStepOneUploadFileResult.Result.OperationId,
+                                            RequestId = Guid.NewGuid().ToString().Replace("-", "").Substring(0, 21),
+                                            DisplayLanguage = "en",
+                                        })
+                                .ReceiveJson<ApiResult<UpgradeCadesCoreResult>>();
+
+                return Ok(operationId);
+
+                //return File(signStepOneCoreResult.Result.FileData, "application/pdf", "pdf000.pdf");
+
+            }
+            catch (Exception ex)
+            {
+            }
+
+            if (signStepOneCoreResult == null)
+            {
+                return BadRequest("Hata");
+            }
+            else if (string.IsNullOrWhiteSpace(signStepOneCoreResult.Error) == false)
+            {
+                return BadRequest(signStepOneCoreResult.Error);
+            }
+            else if (signStepOneCoreResult.Result.IsSuccess == false)
             {
                 return BadRequest("Hata");
             }
@@ -739,6 +821,11 @@ namespace BirImza.CoreApiCustomerApi.Controllers
     }
 
     public class UpgradePadesCoreResult
+    {
+        public bool IsSuccess { get; set; }
+    }
+
+    public class UpgradeCadesCoreResult
     {
         public bool IsSuccess { get; set; }
     }
