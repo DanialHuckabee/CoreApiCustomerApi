@@ -12,18 +12,28 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         private readonly ILogger<OnaylarimController> _logger;
         private IWebHostEnvironment _env;
 
+
+        //private readonly string _onaylarimServiceUrl = "https://api.onaylarim.com";
+        //private readonly string _apiKey = "";
+
+
+        private readonly string _onaylarimServiceUrl = "https://localhost:44337";
+        private readonly string _apiKey = "278c0eb01c3f44e6ac0a64e43c478c0ab3e48a6fc4fe476987e52a3c8ced76b3";
+
         /// <summary>
         /// Bu adresi test ortamı için https://apitest.onaylarim.com olarak değiştirmelisiniz
         /// </summary>
-        private readonly string _onaylarimServiceUrl = "https://localhost:44337";
-        //private readonly string _onaylarimServiceUrl = "https://apitest.onaylarim.com";
-        ////private readonly string _onaylarimServiceUrl = "http://api.beamimza.com";
+
+
+        ////private readonly string _onaylarimServiceUrl = "https://apitest.onaylarim.com";
+        //////private readonly string _onaylarimServiceUrl = "http://api.beamimza.com";
 
 
         /// <summary>
         /// Size verilen API anahtarı ile değiştiriniz.
         /// </summary>
-        private readonly string _apiKey = "278c0eb01c3f44e6ac0a64e43c478c0ab3e48a6fc4fe476987e52a3c8ced76b3";
+
+
         //private readonly string _apiKey = "e7f6aa834bd145199eb9ae5e1a5744a02151b9ed63024c1eb889493f59ebc27d";
         //private readonly string _apiKey = "62e00e670b394e8b9c1b339d65383d8183e514e1fe0747598c5fd5c34c0de921";
 
@@ -104,7 +114,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                                          .WithHeader("X-API-KEY", _apiKey)
                                          .WithHeader("operationid", operationId)
                                          .PostMultipartAsync(mp => mp
-                                                 .AddFile("file", $@"{_env.ContentRootPath}\Resources\Sample.pdf", null, 4096, "Sample.pdf")
+                                                 .AddFile("file", $@"{_env.ContentRootPath}\Resources\sample.pdf", null, 4096, "sample.pdf")
                                          )
                                          .ReceiveJson<ApiResult<SignStepOneUploadFileResult>>();
 
@@ -324,7 +334,8 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                                                 },
                                                 PhoneNumber = request.PhoneNumber,
                                                 Operator = request.Operator,
-                                                UserPrompt = "CoreAPI ile belge imzalayacaksınız."
+                                                UserPrompt = "CoreAPI ile belge imzalayacaksınız.",
+                                                CitizenshipNo = request.CitizenshipNo
                                             })
                                     .ReceiveJson<ApiResult<SignStepOneCoreInternalForPadesMobileResult>>();
 
@@ -940,6 +951,11 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         /// İmza atarken kullanılacak mobil imzaya ait telefon numarasının bağlı olduğu operatördür. Örnek: TURKCELL, VODAFONE, AVEA
         /// </summary>
         public string Operator { get; set; }
+
+        /// <summary>
+        /// Mobil imza sahibi kişinin TC'si verilmesi durumunda, mobil imza sertifikası içindeki TC ile kontrol yapılır
+        /// </summary>
+        public string? CitizenshipNo { get; set; }
     }
 
     public class SignStepOneCadesCoreRequest : BaseRequest
@@ -1029,6 +1045,10 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         /// İmza atarken kullanıcıya gösterilecek mesaj
         /// </summary>
         public string UserPrompt { get; set; }
+        /// <summary>
+        /// Mobil imza sahibi kişinin TC'si verilmesi durumunda, mobil imza sertifikası içindeki TC ile kontrol yapılır
+        /// </summary>
+        public string? CitizenshipNo { get; set; }
     }
 
     public class SignStepOnePadesCoreRequest : BaseRequest
