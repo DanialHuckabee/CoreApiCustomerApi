@@ -84,7 +84,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
 
             else if (request.SignatureType == "pades")
             {
-               
+
 
                 try
                 {
@@ -256,6 +256,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                                                 SignedData = request.SignedData,
                                                 KeyId = request.KeyId,
                                                 KeySecret = request.KeySecret,
+                                                DontUpgradeToLtv = request.DontUpgradeToLtv,
                                                 OperationId = request.OperationId,
                                                 RequestId = Guid.NewGuid().ToString().Replace("-", "").Substring(0, 21),
                                                 DisplayLanguage = "en"
@@ -545,7 +546,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
             var operationId = Guid.NewGuid();
 
             // Dosyayı kendi bilgisayarınızda bulunan bir dosya olarak ayarlayınız
-            var filePath = $@"{_env.ContentRootPath}\Resources\tek imza.pdf";
+            var filePath = $@"{_env.ContentRootPath}\Resources\dosya (80).pdf";
 
             ApiResult<SignStepOneUploadFileResult> signStepOneUploadFileResult;
             try
@@ -554,7 +555,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
                                         .WithHeader("X-API-KEY", _apiKey)
                                         .WithHeader("operationid", operationId)
                                         .PostMultipartAsync(mp => mp
-                                                .AddFile("file", filePath, null, 4096, "tek imza.pdf")
+                                                .AddFile("file", filePath, null, 4096, "dosya (80).pdf")
                                         )
                                         .ReceiveJson<ApiResult<SignStepOneUploadFileResult>>();
             }
@@ -606,7 +607,7 @@ namespace BirImza.CoreApiCustomerApi.Controllers
             {
                 return BadRequest(signStepOneCoreResult.Error);
             }
-            else if (signStepOneCoreResult.Result.IsSuccess==false)
+            else if (signStepOneCoreResult.Result.IsSuccess == false)
             {
                 return BadRequest("Hata");
             }
@@ -916,6 +917,10 @@ namespace BirImza.CoreApiCustomerApi.Controllers
 
     public class FinishSignRequest
     {
+        /// <summary>
+        /// İmza işlemi sonrası imzanın LTV'ye upgrade edilip edilmeyeceğini belirler. Belgede N imza olacaksa, 1, 2, 3 ... , N-1 inci imzalar için True, sadece son imza için False gönderilmelidir.
+        /// </summary>
+        public bool DontUpgradeToLtv { get; set; }
 
         /// <summary>
         /// e-İmza aracı tarafından imzalanmış veri
@@ -1254,6 +1259,10 @@ namespace BirImza.CoreApiCustomerApi.Controllers
     public class SignStepThreePadesCoreRequest : BaseRequest
     {
         /// <summary>
+        /// İmza işlemi sonrası imzanın LTV'ye upgrade edilip edilmeyeceğini belirler. Belgede N imza olacaksa, 1, 2, 3 ... , N-1 inci imzalar için True, sadece son imza için False gönderilmelidir.
+        /// </summary>
+        public bool DontUpgradeToLtv { get; set; }
+        /// <summary>
         /// e-İmza aracı tarafından imzalanmış veri
         /// </summary>
         public string SignedData { get; set; }
@@ -1269,6 +1278,8 @@ namespace BirImza.CoreApiCustomerApi.Controllers
         /// Her bir istek için tekil bir GUID değeri verilmelidir. Bu değer aynı e-imza işlemi ile ilgili olarak daha sonraki metodlarda kullanılır.
         /// </summary>
         public Guid OperationId { get; set; }
+
+     
     }
 
     public class QrCodeInfo
